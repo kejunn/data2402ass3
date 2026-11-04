@@ -14,8 +14,20 @@ class RaceSimulator:
         """
         Initialize the simulator and store tire data.
         """
-        pass
+        LAPS = 60
+        PIT_STOP_TIME = 25
+        NUM_OF_STINTS = 3
 
+        def __init__(self):
+            self.tires = pd.DataFrame(
+                {
+                    'Tmin': [0, 1, 2],
+                    'Tmax': [10, 10, 10],
+                    'alpha': [1 / 2, 1 / 4, 1 / 16],
+                    'beta': [15, 25, 55]
+                },
+                index = ['Soft', 'Medium', 'Hard']
+            )
 
     def tire_time(self, age, Tmin, Tmax, alpha, beta):
         """
@@ -31,7 +43,7 @@ class RaceSimulator:
         Returns:
             Tire time added for the given tire age.
         """
-        pass
+        return Tmin + ((Tmax - Tmin) / (1 + np.exp(-alpha * (age - beta))))
 
 
     def simulate(self, stint_lengths, tire_types):
@@ -45,7 +57,31 @@ class RaceSimulator:
         Returns:
             Total time added from tire degradation and pit stops.
         """
-        pass
+        stints = []
+
+        for number, (length, tire) in enumerate(zip(stint_lengths, tire_types)):
+            tire_params = self.tires.loc[tire]
+            # one dataframe for each stint
+            stint = pd.DataFrame(
+                {
+                    'age': np.arange(length)
+                }
+            )
+            # add the tire time and pit stop times to dataframe
+            stint['tire_time'] = self.tire_time(stint['age'], tire_params['Tmin'], tire_params['Tmax'], tire_params['alpha'], tire_params['beta'])
+
+            # add pit stop time - number greater than 0 means 2nd and 3rd stints
+            stint['pit_time'] = np.where((stint['age'] == 0) & (number > 0), self.PIT_STOP_TIME, 0)
+
+            stints.append(stint)
+
+        race = pd.concat(stints, ignore_index=True)
+        race['lap_time'] = race['tire_time'] + race['pit_time']
+        return float(race['lap_time'].sum())
+
+
+
+
 
 
 def plot_tires(simulator):
