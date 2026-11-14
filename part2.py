@@ -17,17 +17,15 @@ class RaceSimulator:
         """
         Initialize the simulator and store tire data.
         """
-
-        def __init__(self):
-            self.tires = pd.DataFrame(
-                {
-                    'Tmin': [0, 1, 2],
-                    'Tmax': [10, 10, 10],
-                    'alpha': [1 / 2, 1 / 4, 1 / 16],
-                    'beta': [15, 25, 55]
-                },
-                index = ['Soft', 'Medium', 'Hard']
-            )
+        self.tires = pd.DataFrame(
+            {
+                'Tmin': [0, 1, 2],
+                'Tmax': [10, 10, 10],
+                'alpha': [1 / 2, 1 / 4, 1 / 16],
+                'beta': [15, 25, 55]
+            },
+            index = ['Soft', 'Medium', 'Hard']
+        )
 
     def tire_time(self, age, Tmin, Tmax, alpha, beta):
         """
@@ -69,7 +67,7 @@ class RaceSimulator:
             raise ValueError('Stint lengths must add up to 60 total laps.')
 
         for tire in tire_types:
-            if tire not in self.tire_types:
+            if tire not in self.tires.index:
                 raise ValueError('Tire is not one of the three tire types.')
 
         if len(set(tire_types)) < 2:
@@ -111,14 +109,15 @@ def plot_tires(simulator):
         None.
     """
     ages = np.arange(0, simulator.LAPS + 1)
-    for tire in simulator.tire.index:
-        tire_specs = simulator.tire.loc[tire]
+    for tire in simulator.tires.index:
+        tire_specs = simulator.tires.loc[tire]
         plt.plot(ages, simulator.tire_time(ages, tire_specs['Tmin'], tire_specs['Tmax'], tire_specs['alpha'], tire_specs['beta']), label=tire)
-        plt.xlabel = ('Tire Age')
-        plt.ylabel = ('Tire Time Added / Lap')
-        plt.title('Tire Degradation')
-        plt.legend
-        plt.show()
+
+    plt.xlabel = ('Tire Age')
+    plt.ylabel = ('Tire Time Added / Lap')
+    plt.title('Tire Degradation')
+    plt.legend()
+    plt.show()
 
 
 def find_best_strategy(simulator):
@@ -140,7 +139,7 @@ def find_best_strategy(simulator):
     for a in tires:
         for b in tires:
             for c in tires:
-                if len({a, b, c} >= 2):
+                if len({a, b, c}) >= 2:
                     tire_orders.append((a, b, c))
 
     best = None
@@ -159,5 +158,12 @@ def find_best_strategy(simulator):
 
     return best
 
+def main():
+    simulator = RaceSimulator()
+    plot_tires(simulator)
+    total_time_added = simulator.simulate((14, 8, 38), ('Soft', 'Medium', 'Hard'))
+    print(round(total_time_added, 2))
+    print(find_best_strategy(simulator))
 
-    
+if __name__ == '__main__':
+    main()
