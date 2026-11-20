@@ -146,13 +146,13 @@ def find_best_strategy(simulator):
     # pit laps = first lap of stints 2 and 3. each stint >= 1 lap. pit stop at lap 1 would mean zero laps for stint 1
     for pit1, pit2 in combinations(range(2, laps + 1), 2):
         stint_lengths = (pit1 - 1, pit2- pit1, laps - pit2 + 1)
-        for order in tire_orders:
-            total_time = simulator.simulate(stint_lengths, order)
+        for tire_order in tire_orders:
+            total_time = simulator.simulate(stint_lengths, tire_order)
             if best is None or total_time < best['total_time']:
                 best = {
                     'pit_laps': (pit1, pit2),
                     'stint_lengths': stint_lengths,
-                    'tire_types': order,
+                    'tire_types': tire_order,
                     'total_time': total_time
                 }
 
@@ -162,7 +162,7 @@ def main():
     simulator = RaceSimulator()
     plot_tires(simulator)
     total_time_added = simulator.simulate((14, 8, 38), ('Soft', 'Medium', 'Hard'))
-    print(round(total_time_added, 2))
+    print(total_time_added)
     print(find_best_strategy(simulator))
 
 if __name__ == '__main__':
