@@ -75,7 +75,7 @@ class RaceSimulator:
             
         stints = []
 
-        for number, (length, tire) in enumerate(zip(stint_lengths, tire_types)):
+        for stint_number, (length, tire) in enumerate(zip(stint_lengths, tire_types), start=1):
             tire_specs = self.tires.loc[tire] # select by row label
             # one dataframe for each stint
             stint = pd.DataFrame(
@@ -87,7 +87,7 @@ class RaceSimulator:
             stint['tire_time'] = self.tire_time(stint['age'], tire_specs['Tmin'], tire_specs['Tmax'], tire_specs['alpha'], tire_specs['beta'])
 
             # add pit stop time - number greater than 0 means 2nd and 3rd stints and each pit lap starts at 0 again
-            stint['pit_time'] = np.where((stint['age'] == 0) & (number > 0), self.PIT_STOP_TIME, 0)
+            stint['pit_time'] = np.where((stint['age'] == 0) & (stint_number > 1), self.PIT_STOP_TIME, 0)
 
             stints.append(stint)
 
@@ -134,7 +134,7 @@ def find_best_strategy(simulator):
     laps = simulator.LAPS
     tires = list(simulator.tires.index)
 
-    # order matters for strategies, can repeat but minimum 2 tires
+    # order matters for strategies, can repeat but minimum 2 tires, get every possible tire type order
     tire_orders = []
     for a in tires:
         for b in tires:
@@ -143,7 +143,7 @@ def find_best_strategy(simulator):
                     tire_orders.append((a, b, c))
 
     best = None
-    # pit laps = first lap of stints 2 and 3. each stint >= 1 lap. pit stop at lap 1 would mean zero laps for stint 1
+    # pit laps = first lap of stints 2 and 3. each stint >= 1 lap. pit stop at lap 1 would mean zero laps for stint 1, size of each combination is 2
     for pit1, pit2 in combinations(range(2, laps + 1), 2):
         stint_lengths = (pit1 - 1, pit2- pit1, laps - pit2 + 1)
         for tire_order in tire_orders:
